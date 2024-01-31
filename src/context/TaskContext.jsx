@@ -1,11 +1,24 @@
-import React, { createContext, useReducer } from 'react'
+import React, { createContext, useContext, useReducer } from 'react'
 
 const TaskContext = createContext()
+export const taskContext = () => {
+  return useContext(TaskContext)
+}
 
 const initialState = {
   tasks: {
-    todo: [],
-    inProgress: [],
+    todo: [
+      {
+        title: 'Task',
+        id: 0,
+        priority: 'Low',
+        description:
+          'This task includes routine and non-urgent work. Tasks such as performing routine checks fall into this category. These tasks can be done after other urgent tasks are finished.',
+        comments: 12,
+        files: 0,
+      },
+    ],
+    onprogress: [],
     done: [],
   },
   isModalOpen: false,
@@ -14,21 +27,63 @@ const initialState = {
 
 const taskReducer = (state, action) => {
   switch (action.type) {
-    case 'ADD_TASK':
+    case 'ADD_TASK_TODO':
       return {
         ...state,
         tasks: {
           ...state.tasks,
-          [action.payload.column]: [
-            ...state.tasks[action.payload.column],
-            action.payload.task,
-          ],
+          todo: [...state.tasks.todo, action.newTask],
         },
       }
-    case 'MOVE_TASK':
-      break
+    case 'ADD_TASK_ONPROGRESS':
+      return {
+        ...state,
+        tasks: {
+          ...state.tasks,
+          onprogress: [...state.tasks.onprogress, action.newTask],
+        },
+      }
+    case 'ADD_TASK_DONE':
+      return {
+        ...state,
+        tasks: {
+          ...state.tasks,
+          done: [...state.tasks.done, action.newTask],
+        },
+      }
+    case 'MOVE':
+      const { task, newStatus } = action.payload
+
+      const newTasksState = {
+        ...state.tasks,
+        [newStatus]: [...state.tasks[newStatus], task],
+      }
+      let array = ['todo', 'onprogress', 'done']
+
+      let sonuc = array.filter((item) => item !== newStatus)
+
+      sonuc.forEach((status) => {
+        if (newTasksState[status]) {
+          newTasksState[status] = newTasksState[status].filter(
+            (t) => t.id !== task.id
+          )
+        }
+      })
+
+      return {
+        ...state,
+        tasks: newTasksState,
+      }
     case 'DELETE_TASK':
-      break
+      return {
+        ...state,
+        tasks: {
+          ...state.tasks,
+          [action.payload.status]: state.tasks[action.payload.status].filter(
+            (item) => item.id !== action.payload.id
+          ),
+        },
+      }
     case 'TOGGLE_MODAL':
       return { ...state, isModalOpen: !state.isModalOpen }
     case 'TOGGLE_SHOW_HIGH':
@@ -44,7 +99,6 @@ export const TaskCardProvider = ({ children }) => {
     state,
     dispatch,
   }
-
   return (
     <TaskContext.Provider value={contextValue}>{children}</TaskContext.Provider>
   )

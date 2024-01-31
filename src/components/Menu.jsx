@@ -1,50 +1,62 @@
 import React, { useContext } from 'react'
 import PropTypes from 'prop-types'
 import TaskContext from '../context/TaskContext'
+import { toLowerFormat } from '../utils/formatStatus'
+import Button from './Button'
 
 const Menu = ({ task, status, closeMenu }) => {
   const { dispatch } = useContext(TaskContext)
 
   const handleMove = (newStatus) => {
+    const formattedNewStatus = toLowerFormat(newStatus)
     dispatch({
-      type: 'MOVE_TASK',
-      payload: { task, newStatus: newStatus.toLowerCase() },
+      type: 'MOVE',
+      payload: { task, newStatus: formattedNewStatus },
     })
     closeMenu()
   }
 
   const handleDelete = () => {
+    const formattedStatus = toLowerFormat(status)
     dispatch({
       type: 'DELETE_TASK',
-      payload: { id: task.id, status: status.toLowerCase() },
+      payload: { id: task.id, status: formattedStatus },
     })
     closeMenu()
   }
-
   return (
-    <div className="absolute right-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-20">
-      {status !== 'InProgress' && (
-        <button
-          onClick={() => handleMove('InProgress')}
-          className="block px-4 py-2 text-sm capitalize text-gray-700 hover:bg-blue-500 hover:text-white"
+    <div className="absolute right-0 mt-2 py-2 w-40 bg-gray-800 rounded-xl shadow-xl z-20 top-10 divide-y divide-gray-900">
+      {status === 'On Progress' && status !== 'Done' && (
+        <Button
+          onClick={() => handleMove('ToDo')}
+          className="block w-full text-left px-4 py-2 text-sm capitalize text-gray-300 hover:bg-blue-600 hover:text-white"
+        >
+          Move to Todo
+        </Button>
+      )}
+      {status !== 'On Progress' && (
+        <Button
+          onClick={() => handleMove('OnProgress')}
+          className="block w-full text-left px-4 py-2 text-sm capitalize text-gray-300 hover:bg-blue-600 hover:text-white"
         >
           Move to Progress
-        </button>
+        </Button>
       )}
       {status !== 'Done' && (
-        <button
-          onClick={() => handleMove('Done')}
-          className="block px-4 py-2 text-sm capitalize text-gray-700 hover:bg-blue-500 hover:text-white"
+        <Button
+          onClick={() => handleMove('Done', status, task)}
+          className="block w-full text-left px-4 py-2 text-sm capitalize text-gray-300 hover:bg-blue-600 hover:text-white"
         >
           Move to Done
-        </button>
+        </Button>
       )}
-      <button
+
+      <Button
         onClick={handleDelete}
-        className="block px-4 py-2 text-sm capitalize text-gray-700 hover:bg-red-500 hover:text-white"
+        className="block w-full text-left px-4 py-2 text-sm capitalize text-gray-300 hover:bg-red-600 hover:text-white"
       >
         Delete Task
-      </button>
+      </Button>
     </div>
   )
 }
